@@ -9,5 +9,5 @@ fastclick.attach(document.body)
 new Vue({
   el: '#app',
   template: '<App/>',
-  components: { App }
+  components: { App },
 })
