@@ -3,14 +3,15 @@ import Router from 'vue-router'
 import Recommend from 'components/recommend/recommend'
 import Search from 'components/search/search'
 import Singer from 'components/singer/singer'
-import Rank from 'components/rand/rand'
+import Rank from 'components/rank/rank'
+
 Vue.use(Router)
 
 export default new Router({
   routes: [
     {
-      path:'/',
-      component:Rank
+      path: '/',
+      component: Rank
     },
     {
       path: '/recommend',
@@ -18,19 +19,19 @@ export default new Router({
       component: Recommend
     },
     {
-      path:'/singer',
-      name:'歌手',
-      component:Singer
+      path: '/singer',
+      name: '歌手',
+      component: Singer
     },
     {
-      path:'/search',
-      name:'搜索',
-      component:Search
+      path: '/search',
+      name: '搜索',
+      component: Search
     },
     {
-      path:'/rank',
-      name:'排行',
-      component:Rank
+      path: '/rank',
+      name: '排行',
+      component: Rank
     }
   ]
 })
