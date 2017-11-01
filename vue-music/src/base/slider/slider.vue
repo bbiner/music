@@ -37,13 +37,23 @@
     },
     mounted() {
       setTimeout(() => {
-        this._setSliderWidth()
+        this._setSliderWidth(true)
         this._initDots()
         this._initSlider()
+        if (this.autoPlay) {
+          this._play()
+        }
       }, 20)
+      window.addEventListener('resize', () => {
+        if (!this.slider) {
+          return
+        }
+        this._setSliderWidth()
+        this.slider.refresh()
+      })
     },
     methods: {
-      _setSliderWidth() {
+      _setSliderWidth(isResize) {
         this.childrens = this.$refs.sliderGroup.children
         let width = 0
         let sliderWidth = this.$refs.slider.clientWidth
@@ -53,7 +63,7 @@
           child.style.width = sliderWidth + 'px'
           width += sliderWidth
         }
-        if (this.loop) {
+        if (this.loop && isResize) {
           width += sliderWidth * 2
         }
         this.$refs.sliderGroup.style.width = width + 'px'
@@ -64,7 +74,7 @@
           scrollY: false,
           momentum: false,
           snap: true,
-          snapLoop: this.loop,
+          snapLoop: true,
           snapThreshold: 0.3,
           snapSpeed: 400
         })
@@ -74,10 +84,21 @@
             pageIndex -= 1
           }
           this.currentPageIndex = pageIndex
+          clearTimeout(this.timer)
+          this._play()
         })
       },
       _initDots() {
         this.dots = new Array(this.childrens.length)
+      },
+      _play() {
+        let pageIndex = this.currentPageIndex + 1
+        if (this.loop) {
+          pageIndex += 1
+        }
+        this.timer = setTimeout(() => {
+          this.slider.goToPage(pageIndex, 0, 400)
+        }, this.interval)
       }
     }
 
