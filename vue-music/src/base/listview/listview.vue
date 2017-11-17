@@ -1,31 +1,29 @@
 <template>
-  <scroll @scroll="scroll"
-          :listen-scroll="listenScroll"
-          :probe-type="probeType"
-          :data="data"
-          class="listview"
-          ref="listview">
+  <scroll ref="listview" class="listview" :data="data" :listenScroll="listenScroll" :probeType="probeType"
+          @scroll="scroll">
     <ul>
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
-        <uL>
-          <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
-            <img class="avatar" v-lazy="item.avatar">
+        <ul>
+          <li v-for="item in group.items" class="list-group-item">
+            <img class="avatar" v-lazy="item.avatar" alt="">
             <span class="name">{{item.name}}</span>
           </li>
-        </uL>
+        </ul>
       </li>
     </ul>
-    <div class="list-shortcut" @touchstart.stop.prevent="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove"
-         @touchend.stop>
+    <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
       <ul>
-        <li v-for="(item, index) in shortcutList" :data-index="index" class="item"
-            :class="{'current':currentIndex===index}">{{item}}
+        <li v-for="(item, index) in shortcutList" class="item"
+            :class="{'current': currentIndex===index}"
+            :data-index="index"
+        >
+          {{item}}
         </li>
       </ul>
     </div>
-    <div class="list-fixed" ref="fixed" v-show="fixedTitle">
-      <div class="fixed-title">{{fixedTitle}} </div>
+    <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+      <h1 class="fixed-title">{{fixedTitle}}</h1>
     </div>
     <div v-show="!data.length" class="loading-container">
       <loading></loading>
@@ -38,10 +36,22 @@
   import Loading from 'base/loading/loading'
   import {getData} from 'common/js/dom'
 
-  const TITLE_HEIGHT = 30
   const ANCHOR_HEIGHT = 18
-
+  const TITLE_HEIGHT = 30
   export default {
+    created() {
+      this.touch = {}
+      this.listenScroll = true
+      this.listHeight = []
+      this.probeType = 3
+    },
+    data() {
+      return {
+        scrollY: -1,
+        currentIndex: 0,
+        diff: -1
+      }
+    },
     props: {
       data: {
         type: Array,
@@ -61,29 +71,12 @@
         return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
-    data() {
-      return {
-        scrollY: -1,
-        currentIndex: 0,
-        diff: -1
-      }
-    },
-    created() {
-      this.probeType = 3
-      this.listenScroll = true
-      this.touch = {}
-      this.listHeight = []
-    },
     methods: {
-      selectItem(item) {
-        this.$emit('select', item)
-      },
       onShortcutTouchStart(e) {
         let anchorIndex = getData(e.target, 'index')
         let firstTouch = e.touches[0]
         this.touch.y1 = firstTouch.pageY
         this.touch.anchorIndex = anchorIndex
-
         this._scrollTo(anchorIndex)
       },
       onShortcutTouchMove(e) {
@@ -91,25 +84,10 @@
         this.touch.y2 = firstTouch.pageY
         let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
         let anchorIndex = parseInt(this.touch.anchorIndex) + delta
-
         this._scrollTo(anchorIndex)
-      },
-      refresh() {
-        this.$refs.listview.refresh()
       },
       scroll(pos) {
         this.scrollY = pos.y
-      },
-      _calculateHeight() {
-        this.listHeight = []
-        const list = this.$refs.listGroup
-        let height = 0
-        this.listHeight.push(height)
-        for (let i = 0; i < list.length; i++) {
-          let item = list[i]
-          height += item.clientHeight
-          this.listHeight.push(height)
-        }
       },
       _scrollTo(index) {
         if (!index && index !== 0) {
@@ -122,6 +100,18 @@
         }
         this.scrollY = -this.listHeight[index]
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
+      },
+      _calculateHeight() {
+        this.listHeight = []
+        const list = this.$refs.listGroup
+        let height = 0
+        this.listHeight.push(height)
+        for (let i = 0; i < list.length; i++) {
+          let item = list[i]
+          height += item.clientHeight
+          this.listHeight.push(height)
+        }
+        console.log(this.listHeight)
       }
     },
     watch: {
@@ -132,7 +122,7 @@
       },
       scrollY(newY) {
         const listHeight = this.listHeight
-        // 当滚动到顶部，newY>0
+        // 当滚动到顶部,newY>0
         if (newY > 0) {
           this.currentIndex = 0
           return
@@ -142,12 +132,12 @@
           let height1 = listHeight[i]
           let height2 = listHeight[i + 1]
           if (-newY >= height1 && -newY < height2) {
-            this.currentIndex = i
             this.diff = height2 + newY
+            this.currentIndex = i
             return
           }
         }
-        // 当滚动到底部，且-newY大于最后一个元素的上限
+        // 当滚动到底部, 且-newY大于最后一个元素的上限
         this.currentIndex = listHeight.length - 2
       },
       diff(newVal) {
@@ -164,7 +154,6 @@
       Loading
     }
   }
-
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
